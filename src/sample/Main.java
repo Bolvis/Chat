@@ -27,8 +27,7 @@ public class Main extends Application {
 
 
         primaryStage.getIcons().add(new Image("file:src/icon.png"));
-        activeUsers.add("Kamila");
-        activeUsers.add("Kacper");
+
 
         HBox hBox=new HBox(10);
         VBox pionowyVBox = new VBox(10);
@@ -77,7 +76,6 @@ public class Main extends Application {
         TextField nick=new TextField();
         nick.setStyle("-fx-background-color: #3c3f41; -fx-text-fill: darkorange;");
         nick.setPromptText("Type nick...");
-        nick.setText("bolvis");
         TextField msg = new TextField();
         msg.setMaxHeight(80);
         msg.setId("textField");
@@ -154,8 +152,9 @@ public class Main extends Application {
         pionowyVBox.getChildren().add(HBox);
 
         //TODO to dla wygody na localhost
-        address.setText("localhost");
-        port.setText("33666");
+        //address.setText("localhost");
+        //port.setText("33666");
+        //nick.setText("bolvis");
 
         Scene scene = new Scene(hBox, 900, 440);
         primaryStage.setTitle("Simple chat");
