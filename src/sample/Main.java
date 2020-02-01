@@ -2,6 +2,8 @@ package sample;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -20,18 +22,24 @@ public class Main extends Application {
     Connection connection= new Connection();
     Timer timer = new Timer();
     List<String> activeUsers=new ArrayList<>();
-    List<String>  receiversList=new ArrayList<>();
-    List<CheckBox> checkBoxes=new ArrayList<>();
+    ObservableList<CheckBox> checkBoxes= FXCollections.observableArrayList();
+    ListView<CheckBox> receivers = new ListView<>();
     @Override
     public void start(Stage primaryStage) throws Exception{
 
 
         primaryStage.getIcons().add(new Image("file:src/icon.png"));
-
-
+        for(int i=0;i<10;i++) {
+            activeUsers.add("Kamila");
+            activeUsers.add("Kacper");
+            activeUsers.add("Karol");
+            activeUsers.add("Karolina");
+            activeUsers.add("Julek");
+        }
         HBox hBox=new HBox(10);
         VBox pionowyVBox = new VBox(10);
         VBox sidePanel = new VBox(10);
+
         hBox.setStyle("-fx-background-color: #2b2b2b;");
         pionowyVBox.setMinSize(620,370);
         hBox.getChildren().add(pionowyVBox);
@@ -47,10 +55,13 @@ public class Main extends Application {
         sidePanelTitle.setStyle("-fx-text-fill: darkorange;");
         sidePanel.getChildren().add(sidePanelTitle);
 
-        for(String item : activeUsers)  checkBoxes.add(new CheckBox(item));
-        for (CheckBox checkBox : checkBoxes) checkBox.setStyle("-fx-text-fill: darkorange");
-        sidePanel.getChildren().addAll(checkBoxes);
 
+        for(String item : activeUsers)  checkBoxes.add(new CheckBox(item));
+        for (CheckBox checkBox : checkBoxes) checkBox.setStyle("-fx-text-fill: darkorange;");
+        receivers.setItems(checkBoxes);
+        receivers.setStyle("-fx-control-inner-background: #3c3f41; -fx-text-fill: darkorange; -fx-highlight-fill: darkorange; -fx-focus-color: darkorange;");
+        receivers.setMaxSize(140,800);
+        sidePanel.getChildren().add(receivers);
 
         pionowyVBox.getChildren().add(napis);
 
@@ -152,9 +163,9 @@ public class Main extends Application {
         pionowyVBox.getChildren().add(HBox);
 
         //TODO to dla wygody na localhost
-        //address.setText("localhost");
-        //port.setText("33666");
-        //nick.setText("bolvis");
+        address.setText("localhost");
+        port.setText("33666");
+        nick.setText("bolvis");
 
         Scene scene = new Scene(hBox, 900, 440);
         primaryStage.setTitle("Simple chat");
