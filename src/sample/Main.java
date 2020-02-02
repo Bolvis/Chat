@@ -100,7 +100,6 @@ public class Main extends Application {
                 receiver=item.getText();
                 try {
                 connection.send("msg;"+receiver+";"+msg.getText()+"\n");
-                msg.setText(null);
             } catch (NullPointerException | IOException e) {
                 chat.setText(chat.getText()+"You aren't connected to any server..."+"\n");
                 e.printStackTrace();
@@ -108,6 +107,7 @@ public class Main extends Application {
             }
             }
             }
+            msg.setText(null);
         });
 
         connect.setOnAction(actionEvent -> {
@@ -117,6 +117,7 @@ public class Main extends Application {
                 chat.setText(chat.getText()+"Connecting to server... "+ip+"\n");
                 connection=new Connection(ip,p);
                 //connection.send("Nick; "+nick.getText()+"\n"); TODO jak Karol da serwer to włącz
+                connection.send("{\"username\":\"test\",\"password\":\"sci\",\"type\":\"ClientPacket.Login\"}"+"\n");
                 timer.scheduleAtFixedRate(new TimerTask() {
                     @Override
                     public void run() {
