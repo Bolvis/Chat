@@ -1,0 +1,39 @@
+.label
+{
+    -fx-text-fill: darkorange;
+}
+
+.text-area
+{
+    -fx-control-inner-background: #3c3f41;
+    -fx-text-fill: darkorange;
+    -fx-highlight-fill: darkorange;
+    -fx-focus-color: darkorange;
+}
+
+.list-view
+{
+    -fx-control-inner-background: #3c3f41;
+    -fx-text-fill: darkorange;
+    -fx-highlight-fill: darkorange;
+    -fx-focus-color: darkorange;
+}
+
+.check-box
+{
+    -fx-text-fill: darkorange;
+}
+.button
+{
+    -fx-background-color: #3c3f41;
+    -fx-text-fill: darkorange;
+}
+.text-field
+{
+    -fx-background-color: #3c3f41;
+    -fx-text-fill: darkorange;
+}
+.hBox
+{
+    -fx-background-color: #2b2b2b;
+}

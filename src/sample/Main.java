@@ -19,7 +19,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Main extends Application {
-    Connection connection= new Connection();
+    Connection connection;
     Timer timer = new Timer();
     List<String> activeUsers=new ArrayList<>();
     ObservableList<CheckBox> checkBoxes= FXCollections.observableArrayList();
@@ -27,123 +27,167 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception{
 
-
         primaryStage.getIcons().add(new Image("file:src/icon.png"));
+
+        HBox HBox = new HBox(10);
         HBox hBox=new HBox(10);
-        VBox pionowyVBox = new VBox(10);
+        hBox.getStylesheets().add("file:src/style.css");
+        hBox.getStyleClass().add("hBox");
+
+        VBox vBox = new VBox(10);
+        vBox.setMinSize(620,370);
         VBox sidePanel = new VBox(10);
+        vBox.setPadding(new Insets(10));
 
-        hBox.setStyle("-fx-background-color: #2b2b2b;");
-        pionowyVBox.setMinSize(620,370);
-        hBox.getChildren().add(pionowyVBox);
+
+        hBox.getChildren().add(vBox);
         hBox.getChildren().add(sidePanel);
-        pionowyVBox.setPadding(new Insets(10));
 
-        Label napis = new Label();
-        napis.setText("Chat");
-        napis.setStyle("-fx-text-fill: darkorange;");
+
+        Label title = new Label();
+        title.setText("Chat");
+
 
         Label sidePanelTitle=new Label();
         sidePanelTitle.setText("Active users");
-        sidePanelTitle.setStyle("-fx-text-fill: darkorange;");
         sidePanel.getChildren().add(sidePanelTitle);
 
-
-        for(String item : activeUsers)  checkBoxes.add(new CheckBox(item));
-        for (CheckBox checkBox : checkBoxes) checkBox.setStyle("-fx-text-fill: darkorange;");
         receivers.setItems(checkBoxes);
-        receivers.setStyle("-fx-control-inner-background: #3c3f41; -fx-text-fill: darkorange; -fx-highlight-fill: darkorange; -fx-focus-color: darkorange;");
         receivers.setMaxSize(140,800);
         sidePanel.getChildren().add(receivers);
 
-        pionowyVBox.getChildren().add(napis);
+        vBox.getChildren().add(title);
 
 
         TextArea chat = new TextArea();
         chat.setWrapText(true);
-        chat.setStyle("-fx-control-inner-background: #3c3f41; -fx-text-fill: darkorange; -fx-highlight-fill: darkorange; -fx-focus-color: darkorange;");
         chat.setEditable(false);
         chat.setMinHeight(300);
-        pionowyVBox.getChildren().add(chat);
+        vBox.getChildren().add(chat);
 
-
+        Button exit = new Button("Exit");
         Button send = new Button("Send");
-        send.setStyle("-fx-background-color: #3c3f41; -fx-text-fill: darkorange;");
         Button connect= new Button("Connect");
-        connect.setStyle("-fx-background-color: #3c3f41; -fx-text-fill: darkorange;");
         TextField address=new TextField();
-        address.setStyle("-fx-background-color: #3c3f41; -fx-text-fill: darkorange;");
         address.setPromptText("Type address...");
         TextField port=new TextField();
-        port.setStyle("-fx-background-color: #3c3f41; -fx-text-fill: darkorange;");
         port.setPromptText("Type port...");
         TextField nick=new TextField();
-        nick.setStyle("-fx-background-color: #3c3f41; -fx-text-fill: darkorange;");
         nick.setPromptText("Type nick...");
         TextField msg = new TextField();
         msg.setMaxHeight(80);
         msg.setId("textField");
-        msg.setStyle("-fx-background-color: #3c3f41; -fx-text-fill: darkorange;");
         msg.setPromptText("Type message...");
-        pionowyVBox.getChildren().add(msg);
+        vBox.getChildren().add(msg);
 
         send.setOnAction(event -> {
+
             String receiver="";
+
             for(CheckBox item:checkBoxes) {if(item.isSelected()){
+
                 receiver=item.getText();
+
                 try {
+
                 connection.send("MSG;"+receiver+";"+msg.getText()+"\n");
+
             } catch (NullPointerException | IOException e) {
+
                 chat.setText(chat.getText()+"You aren't connected to any server..."+"\n");
+
                 e.printStackTrace();
+
                 break;
             }
             }
             }
+            chat.setText(chat.getText()+"you:"+msg.getText()+"\n");
+
+            chat.setScrollTop(Long.MAX_VALUE);
+
             msg.setText(null);
         });
 
         connect.setOnAction(actionEvent -> {
             String ip=address.getText();
             try {
+
                 int p=Integer.parseInt(port.getText());
+
                 chat.setText(chat.getText()+"Connecting to server... "+ip+"\n");
+
                 connection=new Connection(ip,p);
+
                 connection.send("NICK; "+nick.getText()+"\n");
+
                 timer.scheduleAtFixedRate(new TimerTask() {
                     @Override
                     public void run() {
-                        if(!connection.serverMessage.equals("")) {
+                        try {
+                            connection.listen(connection.socket);
+                            if(!connection.serverMessage.equals("")) {
+                                System.out.println(connection.serverMessage);
+                                String[] packet=connection.serverMessage.split(";");
+                                switch(packet[0])
+                                {
+                                    case "JOIN":
+                                        activeUsers.add(packet[1]);
+                                        checkBoxes.clear();
+                                        for(String item : activeUsers)  checkBoxes.add(new CheckBox(item));
+                                        connection.serverMessage="";
+                                        break;
 
-                            chat.setText(chat.getText()+connection.serverMessage+"\n");
-                            chat.setScrollTop(Long.MAX_VALUE);
-                            connection.serverMessage="";
+                                    case "LEAVE":
+                                        activeUsers.remove(packet[1]);
+                                        checkBoxes.clear();
+                                        for(String item : activeUsers)  checkBoxes.add(new CheckBox(item));
+                                        connection.serverMessage="";
+                                        break;
+
+                                    case "MSG":
+                                        chat.setText(chat.getText()+packet[1]+":"+packet[2]+"\n");
+                                        chat.setScrollTop(Long.MAX_VALUE);
+                                        connection.serverMessage="";
+                                        break;
+
+                                    case "ERROR":
+                                        chat.setText(chat.getText()+"Error: "+packet[1]+"\n");
+                                        chat.setScrollTop(Long.MAX_VALUE);
+                                        connection.serverMessage="";
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
                     }
-                }, 0, 50);
-                chat.setScrollTop(Long.MAX_VALUE);
-            } catch (IOException e) {
+                }, 0,50);
+
+
+            } catch (NullPointerException|IOException e) {
                 e.printStackTrace();
             }
         });
-        Button exit = new Button("Exit");
-        exit.setStyle("-fx-background-color: #3c3f41; -fx-text-fill: darkorange;");
+
 
         exit.setOnAction(event -> {
             try {
                 connection.send("LEAVE;"+nick.getText()+"\n");
                 timer.cancel();
                 Platform.exit();
-            } catch (IOException e) {
+            } catch (NullPointerException|IOException e) {
                 e.printStackTrace();
+                timer.cancel();
+                Platform.exit();
             }
-            timer.cancel();
-            Platform.exit();
         });
 
 
 
-        HBox HBox = new HBox(10);
+
         HBox.getChildren().add(send);
         HBox.getChildren().add(exit);
         HBox.getChildren().add(connect);
@@ -151,9 +195,7 @@ public class Main extends Application {
         HBox.getChildren().add(port);
         HBox.getChildren().add(nick);
 
-
-
-        pionowyVBox.getChildren().add(HBox);
+        vBox.getChildren().add(HBox);
 
         //TODO to dla wygody na localhost
         address.setText("localhost");
@@ -166,9 +208,6 @@ public class Main extends Application {
         primaryStage.show();
 
     }
-
-
-
 
     public static void main(String[] args) {launch(args);}
 

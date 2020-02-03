@@ -7,33 +7,40 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.Objects;
 
+
 public class Connection {
 
     public Socket socket;
     public String address;
     int port;
+    public Listen listen;
     public String serverMessage="";
     public Connection(String address,int port) throws IOException {
         this.address=address;
         this.port=port;
         socket = new Socket(address,port);
-        Thread listen=new Thread(new Listen());
+    }
+
+
+    public void listen(Socket socket) throws  IOException
+    {
+        Thread listen= new Thread(new Listen(socket));
         listen.start();
     }
-    public Connection(){}
     public void send(String msg) throws IOException {
         Thread send=new Thread(new Send(msg));
         send.start();
     }
+
+
     private class Listen extends Socket implements Runnable
     {
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(socket).getInputStream()));
+        BufferedReader reader;
         String line;
-
-        private Listen() throws IOException {
+        Listen(Socket socket) throws IOException {
+            reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(socket).getInputStream()));
         }
-
         public void run()
         {
             try {
