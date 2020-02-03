@@ -29,13 +29,6 @@ public class Main extends Application {
 
 
         primaryStage.getIcons().add(new Image("file:src/icon.png"));
-        for(int i=0;i<10;i++) {
-            activeUsers.add("Kamila");
-            activeUsers.add("Kacper");
-            activeUsers.add("Karol");
-            activeUsers.add("Karolina");
-            activeUsers.add("Julek");
-        }
         HBox hBox=new HBox(10);
         VBox pionowyVBox = new VBox(10);
         VBox sidePanel = new VBox(10);
@@ -99,7 +92,7 @@ public class Main extends Application {
             for(CheckBox item:checkBoxes) {if(item.isSelected()){
                 receiver=item.getText();
                 try {
-                connection.send("msg;"+receiver+";"+msg.getText()+"\n");
+                connection.send("MSG;"+receiver+";"+msg.getText()+"\n");
             } catch (NullPointerException | IOException e) {
                 chat.setText(chat.getText()+"You aren't connected to any server..."+"\n");
                 e.printStackTrace();
@@ -116,8 +109,7 @@ public class Main extends Application {
                 int p=Integer.parseInt(port.getText());
                 chat.setText(chat.getText()+"Connecting to server... "+ip+"\n");
                 connection=new Connection(ip,p);
-                //connection.send("Nick; "+nick.getText()+"\n"); TODO jak Karol da serwer to włącz
-                connection.send("{\"username\":\"test\",\"password\":\"sci\",\"type\":\"ClientPacket.Login\"}"+"\n");
+                connection.send("NICK; "+nick.getText()+"\n");
                 timer.scheduleAtFixedRate(new TimerTask() {
                     @Override
                     public void run() {
@@ -139,14 +131,14 @@ public class Main extends Application {
 
         exit.setOnAction(event -> {
             try {
-                connection.send("leave; "+nick.getText()+"\n");
-            } catch (NullPointerException|IOException e) {
+                connection.send("LEAVE;"+nick.getText()+"\n");
                 timer.cancel();
                 Platform.exit();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
             timer.cancel();
-                Platform.exit();
-
+            Platform.exit();
         });
 
 
@@ -165,7 +157,7 @@ public class Main extends Application {
 
         //TODO to dla wygody na localhost
         address.setText("localhost");
-        port.setText("33666");
+        port.setText("16384");
         nick.setText("bolvis");
 
         Scene scene = new Scene(hBox, 900, 440);
