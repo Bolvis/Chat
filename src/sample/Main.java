@@ -126,45 +126,48 @@ public class Main extends Application {
                     public void run() {
                         try {
                             connection.listen(connection.socket);
-                            if(!connection.serverMessage.equals("")) {
-                                System.out.println(connection.serverMessage);
-                                String[] packet=connection.serverMessage.split(";");
-                                switch(packet[0])
+                            List<String> tempPackets = connection.serverMessages;
+                            if(tempPackets.size()>0) {
+                                int last = tempPackets.size()-1;
+                                System.out.println(last);
+                                System.out.println(tempPackets.get(last));
+                                List<String[]> packet=new ArrayList<>();
+                                for(String item: tempPackets){packet.add(item.split(";"));}
+                                for(String[] item:packet){
+                                switch(item[0])
                                 {
                                     case "JOIN":
-                                        activeUsers.add(packet[1]);
+                                        activeUsers.add(item[1]);
                                         checkBoxes.clear();
-                                        for(String item : activeUsers)  checkBoxes.add(new CheckBox(item));
-                                        connection.serverMessage="";
+                                        for(String element : activeUsers)  checkBoxes.add(new CheckBox(element));
                                         break;
 
                                     case "LEAVE":
-                                        activeUsers.remove(packet[1]);
+                                        activeUsers.remove(item[1]);
                                         checkBoxes.clear();
-                                        for(String item : activeUsers)  checkBoxes.add(new CheckBox(item));
-                                        connection.serverMessage="";
+                                        for(String element : activeUsers)  checkBoxes.add(new CheckBox(element));
                                         break;
 
                                     case "MSG":
-                                        chat.setText(chat.getText()+packet[1]+":"+packet[2]+"\n");
+                                        chat.setText(chat.getText()+item[1]+":"+item[2]+"\n");
                                         chat.setScrollTop(Long.MAX_VALUE);
-                                        connection.serverMessage="";
                                         break;
 
                                     case "ERROR":
-                                        chat.setText(chat.getText()+"Error: "+packet[1]+"\n");
+                                        chat.setText(chat.getText()+"Error: "+item[1]+"\n");
                                         chat.setScrollTop(Long.MAX_VALUE);
-                                        connection.serverMessage="";
                                         break;
                                     default:
                                         break;
                                 }
                             }
-                        } catch (IOException e) {
+                                connection.serverMessages.clear();
+                            }
+                        } catch (NullPointerException|IOException e) {
                             e.printStackTrace();
                         }
                     }
-                }, 0,50);
+                }, 0,200);
 
 
             } catch (NullPointerException|IOException e) {

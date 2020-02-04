@@ -5,6 +5,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -14,7 +16,7 @@ public class Connection {
     public String address;
     int port;
     public Listen listen;
-    public String serverMessage="";
+    public List<String> serverMessages=new ArrayList<String>();
     public Connection(String address,int port) throws IOException {
         this.address=address;
         this.port=port;
@@ -43,11 +45,13 @@ public class Connection {
         }
         public void run()
         {
+            while (true){
             try {
                 line = reader.readLine();
-                serverMessage=line;
+                serverMessages.add(line);
             } catch (IOException e) {
                 e.printStackTrace();
+            }
             }
         }
     }
