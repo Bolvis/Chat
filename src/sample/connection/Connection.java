@@ -1,4 +1,4 @@
-package sample;
+package sample.connection;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -15,8 +15,8 @@ public class Connection {
     public Socket socket;
     public String address;
     int port;
-    public Listen listen;
-    public List<String> serverMessages=new ArrayList<String>();
+    public  ServerPacket serverPacket;
+    public List<ServerPacket> serverMessages=new ArrayList<>();
     public Connection(String address,int port) throws IOException {
         this.address=address;
         this.port=port;
@@ -34,6 +34,10 @@ public class Connection {
         send.start();
     }
 
+    public void flush()
+    {
+        serverMessages = new ArrayList<>();
+    }
 
     private class Listen extends Socket implements Runnable
     {
@@ -47,19 +51,49 @@ public class Connection {
         {
             while (true){
             try {
+                String[] convertedLine;
                 line = reader.readLine();
-                serverMessages.add(line);
+                convertedLine=line.split(";");
+                switch(convertedLine[0])
+                {
+                    case "JOIN":
+                       serverPacket=new ServerPacket.JoinOrLeave(ServerPacket.Type.JOIN,convertedLine[1]);
+                        break;
+
+                    case "LEAVE":
+                       serverPacket=new ServerPacket.JoinOrLeave(ServerPacket.Type.LEAVE,convertedLine[1]);
+                        break;
+
+                    case "MSG":
+                       serverPacket=new ServerPacket.Message(ServerPacket.Type.MSG,convertedLine[1],convertedLine[2]);
+                        break;
+
+                    case "ERROR":
+                       serverPacket=new ServerPacket.Error(ServerPacket.Type.ERROR,convertedLine[1]);
+                        break;
+                    default:
+                        break;
+                }
+                serverMessages.add(serverPacket);
             } catch (IOException e) {
                 e.printStackTrace();
             }
             }
         }
     }
+
+
     private class Send extends Socket implements Runnable
     {
         String msg;
-        public Send(String msg) throws IOException {this.msg=msg;}
-        DataOutputStream message = new DataOutputStream(socket.getOutputStream());
+        DataOutputStream message;
+
+        public Send(String msg) throws IOException
+        {
+            this.msg = msg;
+            message = new DataOutputStream(socket.getOutputStream());
+        }
+
         public void run()
         {
             try {
@@ -69,5 +103,8 @@ public class Connection {
                 e.printStackTrace();
             }
         }
+
     }
+
+
 }

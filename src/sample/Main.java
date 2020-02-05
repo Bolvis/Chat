@@ -11,6 +11,9 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import sample.connection.ClientPacket;
+import sample.connection.Connection;
+import sample.connection.ServerPacket;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -103,7 +106,6 @@ public class Main extends Application {
             }
             }
             chat.setText(chat.getText()+" you:"+msg.getText()+"\n");
-
             chat.setScrollTop(Long.MAX_VALUE);
 
             msg.setText(null);
@@ -114,76 +116,60 @@ public class Main extends Application {
             try {
 
                 int p=Integer.parseInt(port.getText());
-
-                chat.setText(chat.getText()+"Connecting to server... "+ip+"\n");
+                ClientPacket.Join join = new ClientPacket.Join(nick.getText());
 
                 connection=new Connection(ip,p);
-
-                connection.send("NICK; "+nick.getText()+"\n");
+                connection.send("NICK; "+join.nick);
 
                 timer.scheduleAtFixedRate(new TimerTask() {
                     @Override
-                    public void run() {
+                    public void run()
+                    {
                         try {
                             connection.listen(connection.socket);
-                            List<String> tempPackets = connection.serverMessages;
-                            if(tempPackets.size()>0) {
-                                int last = tempPackets.size()-1;
-                                System.out.println(last);
-                                System.out.println(tempPackets.get(last));
-                                List<String[]> packet=new ArrayList<>();
-                                for(String item: tempPackets){packet.add(item.split(";"));}
-                                for(String[] item:packet){
-                                switch(item[0])
-                                {
-                                    case "JOIN":
-                                        var joinActiveUsers=activeUsers;
-                                        List<CheckBox> joinCheckboxes=new ArrayList<>();
-                                        joinActiveUsers.add(item[1]);
-                                        for(String element : joinActiveUsers)  joinCheckboxes.add(new CheckBox(element));
-                                        activeUsers=joinActiveUsers;
-                                        checkBoxes.clear();
-                                        checkBoxes.setAll(joinCheckboxes);
-                                        break;
+                            List<ServerPacket> tempPackets = connection.serverMessages;
+                            if (connection.serverMessages.size()>0)
+                            {
+                                    for(ServerPacket packet:tempPackets)
+                                    {
+                                        switch (packet.type)
+                                        {
+                                            case JOIN:
+                                                ServerPacket.JoinOrLeave join = (ServerPacket.JoinOrLeave)packet;
+                                                synchronized (activeUsers){activeUsers.add(join.nick);
+                                                refreshActiveUsers();}
+                                                System.out.println(join.nick+" is online\n");
+                                                break;
 
-                                    case "LEAVE":
-                                        ListView<CheckBox> leaveReceivers=receivers;
-                                        List<CheckBox> leaveCheckboxes=checkBoxes;
+                                            case LEAVE:
+                                                ServerPacket.JoinOrLeave leave = (ServerPacket.JoinOrLeave)packet;
+                                                synchronized (activeUsers){activeUsers.remove(leave.nick);
+                                                refreshActiveUsers();}
+                                                System.out.println(leave.nick+" is offline now\n");
+                                                break;
 
-                                        var leaveActiveUsers=activeUsers;
-                                        leaveActiveUsers.remove(item[1]);
+                                            case MSG:
+                                                ServerPacket.Message message = (ServerPacket.Message)packet;
+                                                chat.setText(chat.getText()+message.nick+": "+message.message+"\n");
+                                                break;
 
-                                        for(CheckBox box: leaveCheckboxes) leaveReceivers.getItems().remove(box);
+                                            case ERROR:
+                                                ServerPacket.Error error = (ServerPacket.Error)packet;
+                                                chat.setText(chat.getText()+error.message+"\n");
+                                                break;
 
-                                        leaveCheckboxes=FXCollections.observableArrayList();
-
-                                        for(String element : leaveActiveUsers)  leaveCheckboxes.add(new CheckBox(element));
-
-                                        checkBoxes.setAll(leaveCheckboxes);
-                                        leaveReceivers.setItems(checkBoxes);
-                                        receivers=leaveReceivers;
-
-                                        activeUsers=leaveActiveUsers;
-                                        break;
-
-                                    case "MSG":
-                                        chat.setText(chat.getText()+item[1]+":"+item[2]+"\n");
-                                        chat.setScrollTop(Long.MAX_VALUE);
-                                        break;
-
-                                    case "ERROR":
-                                        chat.setText(chat.getText()+"Error: "+item[1]+"\n");
-                                        chat.setScrollTop(Long.MAX_VALUE);
-                                        break;
-                                    default:
-                                        break;
-                                }
+                                            default:
+                                                break;
+                                        }
+                                    }
+                                chat.setScrollTop(Long.MAX_VALUE);
+                                connection.flush();
                             }
-                                connection.serverMessages.clear();
+
+                        } catch (NullPointerException|IOException e)
+                            {
+                                e.printStackTrace();
                             }
-                        } catch (NullPointerException|IOException e) {
-                            e.printStackTrace();
-                        }
                     }
                 }, 0,200);
 
@@ -194,19 +180,11 @@ public class Main extends Application {
         });
 
 
-        exit.setOnAction(event -> {
-            try {
-                connection.send("LEAVE;"+nick.getText()+"\n");
-                timer.cancel();
-                Platform.exit();
-            } catch (NullPointerException|IOException e) {
-                e.printStackTrace();
-                timer.cancel();
-                Platform.exit();
-            }
+        exit.setOnAction(event ->
+        {
+            timer.cancel();
+            Platform.exit();
         });
-
-
 
 
         HBox.getChildren().add(send);
@@ -221,7 +199,7 @@ public class Main extends Application {
         //TODO to dla wygody na localhost
         address.setText("localhost");
         port.setText("16384");
-        nick.setText("bolvis");
+        nick.setText("1");
 
         Scene scene = new Scene(hBox, 900, 440);
         primaryStage.setTitle("Simple chat");
@@ -230,6 +208,15 @@ public class Main extends Application {
 
     }
 
-    public static void main(String[] args) {launch(args);}
+    public synchronized void refreshActiveUsers()
+    {
+            checkBoxes.clear();
+            for(String item:activeUsers)
+            {
+                checkBoxes.add(new CheckBox(item));
+            }
+            receivers.setItems(checkBoxes);
+    }
 
+    public static void main(String[] args) {launch(args);}
 }
