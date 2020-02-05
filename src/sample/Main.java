@@ -102,7 +102,7 @@ public class Main extends Application {
             }
             }
             }
-            chat.setText(chat.getText()+"you:"+msg.getText()+"\n");
+            chat.setText(chat.getText()+" you:"+msg.getText()+"\n");
 
             chat.setScrollTop(Long.MAX_VALUE);
 
@@ -137,15 +137,33 @@ public class Main extends Application {
                                 switch(item[0])
                                 {
                                     case "JOIN":
-                                        activeUsers.add(item[1]);
+                                        var joinActiveUsers=activeUsers;
+                                        List<CheckBox> joinCheckboxes=new ArrayList<>();
+                                        joinActiveUsers.add(item[1]);
+                                        for(String element : joinActiveUsers)  joinCheckboxes.add(new CheckBox(element));
+                                        activeUsers=joinActiveUsers;
                                         checkBoxes.clear();
-                                        for(String element : activeUsers)  checkBoxes.add(new CheckBox(element));
+                                        checkBoxes.setAll(joinCheckboxes);
                                         break;
 
                                     case "LEAVE":
-                                        activeUsers.remove(item[1]);
-                                        checkBoxes.clear();
-                                        for(String element : activeUsers)  checkBoxes.add(new CheckBox(element));
+                                        ListView<CheckBox> leaveReceivers=receivers;
+                                        List<CheckBox> leaveCheckboxes=checkBoxes;
+
+                                        var leaveActiveUsers=activeUsers;
+                                        leaveActiveUsers.remove(item[1]);
+
+                                        for(CheckBox box: leaveCheckboxes) leaveReceivers.getItems().remove(box);
+
+                                        leaveCheckboxes=FXCollections.observableArrayList();
+
+                                        for(String element : leaveActiveUsers)  leaveCheckboxes.add(new CheckBox(element));
+
+                                        checkBoxes.setAll(leaveCheckboxes);
+                                        leaveReceivers.setItems(checkBoxes);
+                                        receivers=leaveReceivers;
+
+                                        activeUsers=leaveActiveUsers;
                                         break;
 
                                     case "MSG":
