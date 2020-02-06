@@ -137,14 +137,14 @@ public class Main extends Application {
                                             case JOIN:
                                                 ServerPacket.JoinOrLeave join = (ServerPacket.JoinOrLeave)packet;
                                                 synchronized (activeUsers){activeUsers.add(join.nick);
-                                                refreshActiveUsers();}
+                                                synchronized (checkBoxes){refreshActiveUsers();}}
                                                 System.out.println(join.nick+" is online\n");
                                                 break;
 
                                             case LEAVE:
                                                 ServerPacket.JoinOrLeave leave = (ServerPacket.JoinOrLeave)packet;
                                                 synchronized (activeUsers){activeUsers.remove(leave.nick);
-                                                refreshActiveUsers();}
+                                                synchronized (checkBoxes){refreshActiveUsers();}}
                                                 System.out.println(leave.nick+" is offline now\n");
                                                 break;
 
@@ -215,6 +215,7 @@ public class Main extends Application {
             {
                 checkBoxes.add(new CheckBox(item));
             }
+            receivers.setItems(FXCollections.observableArrayList());
             receivers.setItems(checkBoxes);
     }
 
