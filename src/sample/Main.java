@@ -71,6 +71,7 @@ public class Main extends Application {
         Button exit = new Button("Exit");
         Button send = new Button("Send");
         Button connect= new Button("Connect");
+        Button refresh = new Button("Refresh");
         TextField address=new TextField();
         address.setPromptText("Type address...");
         TextField port=new TextField();
@@ -136,15 +137,13 @@ public class Main extends Application {
                                         {
                                             case JOIN:
                                                 ServerPacket.JoinOrLeave join = (ServerPacket.JoinOrLeave)packet;
-                                                synchronized (activeUsers){activeUsers.add(join.nick);
-                                                synchronized (checkBoxes){refreshActiveUsers();}}
+                                                synchronized (activeUsers){activeUsers.add(join.nick);}
                                                 System.out.println(join.nick+" is online\n");
                                                 break;
 
                                             case LEAVE:
                                                 ServerPacket.JoinOrLeave leave = (ServerPacket.JoinOrLeave)packet;
-                                                synchronized (activeUsers){activeUsers.remove(leave.nick);
-                                                synchronized (checkBoxes){refreshActiveUsers();}}
+                                                synchronized (activeUsers){activeUsers.remove(leave.nick);}
                                                 System.out.println(leave.nick+" is offline now\n");
                                                 break;
 
@@ -182,10 +181,14 @@ public class Main extends Application {
 
         exit.setOnAction(event ->
         {
+            
             timer.cancel();
             Platform.exit();
         });
 
+        refresh.setOnAction(event -> refreshActiveUsers());
+
+        sidePanel.getChildren().add(refresh);
 
         HBox.getChildren().add(send);
         HBox.getChildren().add(exit);
