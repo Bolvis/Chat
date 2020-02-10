@@ -126,6 +126,7 @@ public class Main extends Application {
                     @Override
                     public void run()
                     {
+                        if(connection.connected){
                         try {
                             connection.listen(connection.socket);
                             List<ServerPacket> tempPackets = connection.serverMessages;
@@ -168,6 +169,7 @@ public class Main extends Application {
                                 e.printStackTrace();
                             }
                     }
+                    }
                 }, 0,200);
 
 
@@ -179,7 +181,12 @@ public class Main extends Application {
 
         exit.setOnAction(event ->
         {
-            
+            try {
+                connection.connected = false;
+                connection.socket.close();
+            } catch (NullPointerException|IOException e) {
+                e.printStackTrace();
+            }
             timer.cancel();
             Platform.exit();
         });

@@ -14,6 +14,7 @@ public class Connection {
 
     public Socket socket;
     public String address;
+    public boolean connected;
     int port;
     public  ServerPacket serverPacket;
     public List<ServerPacket> serverMessages=new ArrayList<>();
@@ -21,6 +22,7 @@ public class Connection {
         this.address=address;
         this.port=port;
         socket = new Socket(address,port);
+        connected = true;
     }
 
 
@@ -49,7 +51,7 @@ public class Connection {
         }
         public void run()
         {
-            while (true){
+            while (connected){
             try {
                 String[] convertedLine;
                 line = reader.readLine();
