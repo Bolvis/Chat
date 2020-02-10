@@ -138,13 +138,11 @@ public class Main extends Application {
                                             case JOIN:
                                                 ServerPacket.JoinOrLeave join = (ServerPacket.JoinOrLeave)packet;
                                                 synchronized (activeUsers){activeUsers.add(join.nick);}
-                                                System.out.println(join.nick+" is online\n");
                                                 break;
 
                                             case LEAVE:
                                                 ServerPacket.JoinOrLeave leave = (ServerPacket.JoinOrLeave)packet;
                                                 synchronized (activeUsers){activeUsers.remove(leave.nick);}
-                                                System.out.println(leave.nick+" is offline now\n");
                                                 break;
 
                                             case MSG:
