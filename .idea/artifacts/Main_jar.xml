@@ -12,6 +12,7 @@
       <element id="extracted-dir" path="/usr/lib/javafx-sdk-13.0.2/lib/javafx.swing.jar" path-in-jar="/" />
       <element id="extracted-dir" path="/usr/lib/javafx-sdk-13.0.2/lib/javafx.controls.jar" path-in-jar="/" />
       <element id="extracted-dir" path="/usr/lib/javafx-sdk-13.0.2/lib/javafx.graphics.jar" path-in-jar="/" />
+      <element id="library" level="application" name="lib" />
     </root>
   </artifact>
 </component>

@@ -13,14 +13,13 @@ import java.util.Objects;
 public class Connection {
 
     public Socket socket;
-    public String address;
     public boolean connected;
-    int port;
     public  ServerPacket serverPacket;
-    public List<ServerPacket> serverMessages=new ArrayList<>();
+    public List<ServerPacket> serverMessages;
+
+
     public Connection(String address,int port) throws IOException {
-        this.address=address;
-        this.port=port;
+        serverMessages = new ArrayList<>();
         socket = new Socket(address,port);
         connected = true;
     }
@@ -28,7 +27,7 @@ public class Connection {
 
     public void listen(Socket socket) throws  IOException
     {
-        Thread listen= new Thread(new Listen(socket));
+        Thread listen = new Thread(new Listen(socket));
         listen.start();
     }
     public void send(String msg) throws IOException {
@@ -59,20 +58,21 @@ public class Connection {
                 switch(convertedLine[0])
                 {
                     case "JOIN":
-                       serverPacket=new ServerPacket.JoinOrLeave(ServerPacket.Type.JOIN,convertedLine[1]);
+                       serverPacket = new ServerPacket.JoinOrLeave(ServerPacket.Type.JOIN,convertedLine[1]);
                         break;
 
                     case "LEAVE":
-                       serverPacket=new ServerPacket.JoinOrLeave(ServerPacket.Type.LEAVE,convertedLine[1]);
+                       serverPacket = new ServerPacket.JoinOrLeave(ServerPacket.Type.LEAVE,convertedLine[1]);
                         break;
 
                     case "MSG":
-                       serverPacket=new ServerPacket.Message(ServerPacket.Type.MSG,convertedLine[1],convertedLine[2]);
+                       serverPacket = new ServerPacket.Message(ServerPacket.Type.MSG,convertedLine[1],convertedLine[2]);
                         break;
 
                     case "ERROR":
-                       serverPacket=new ServerPacket.Error(ServerPacket.Type.ERROR,convertedLine[1]);
+                       serverPacket = new ServerPacket.Error(ServerPacket.Type.ERROR,convertedLine[1]);
                         break;
+
                     default:
                         break;
                 }

@@ -16,11 +16,11 @@ public abstract class ClientPacket {
     public static class Message extends ClientPacket
     {
         public String message;
-        public List<String> receivers;
+        public String receiver;
 
-        public Message(String message, List<String> receivers) {
+        public Message(String message, String receivers) {
             this.message = message+"\n";
-            this.receivers = receivers;
+            this.receiver = receivers;
         }
     }
 

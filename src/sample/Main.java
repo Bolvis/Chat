@@ -22,11 +22,14 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Main extends Application {
+
     Connection connection;
     Timer timer = new Timer();
     List<String> activeUsers=new ArrayList<>();
     ObservableList<CheckBox> checkBoxes= FXCollections.observableArrayList();
     ListView<CheckBox> receivers = new ListView<>();
+
+
     @Override
     public void start(Stage primaryStage) throws Exception{
 
@@ -84,24 +87,19 @@ public class Main extends Application {
         msg.setPromptText("Type message...");
         vBox.getChildren().add(msg);
 
-        send.setOnAction(event -> {
+        send.setOnAction(ActionEvent -> {
 
-            String receiver="";
-
-            for(CheckBox item:checkBoxes) {if(item.isSelected()){
-
-                receiver=item.getText();
-
-                try {
-
-                connection.send("MSG;"+receiver+";"+msg.getText()+"\n");
+            ClientPacket.Message message;
+            for(CheckBox item:checkBoxes) {
+                if(item.isSelected()){
+                    try {
+                    message = new ClientPacket.Message(msg.getText(),item.getText());
+                    connection.send("MSG;"+message.receiver+";"+message.message);
 
             } catch (NullPointerException | IOException e) {
 
-                chat.setText(chat.getText()+"You aren't connected to any server..."+"\n");
-
+                chat.setText(chat.getText()+"You aren't connected to any server...\n");
                 e.printStackTrace();
-
                 break;
             }
             }
@@ -112,16 +110,16 @@ public class Main extends Application {
             msg.setText(null);
         });
 
-        connect.setOnAction(actionEvent -> {
+        connect.setOnAction(ActionEvent -> {
             String ip=address.getText();
+            int p=Integer.parseInt(port.getText());
             try {
 
-                int p=Integer.parseInt(port.getText());
                 ClientPacket.Join join = new ClientPacket.Join(nick.getText());
 
-                connection=new Connection(ip,p);
+                connection = new Connection(ip,p);
                 connection.send("NICK; "+join.nick);
-
+                chat.setText(chat.getText()+"Connected...\n");
                 timer.scheduleAtFixedRate(new TimerTask() {
                     @Override
                     public void run()
@@ -179,7 +177,7 @@ public class Main extends Application {
         });
 
 
-        exit.setOnAction(event ->
+        exit.setOnAction(ActionEvent ->
         {
             try {
                 connection.connected = false;
@@ -191,7 +189,7 @@ public class Main extends Application {
             Platform.exit();
         });
 
-        refresh.setOnAction(event -> refreshActiveUsers());
+        refresh.setOnAction(ActionEvent -> refreshActiveUsers());
 
         sidePanel.getChildren().add(refresh);
 
@@ -216,7 +214,7 @@ public class Main extends Application {
 
     }
 
-    public synchronized void refreshActiveUsers()
+    private synchronized void refreshActiveUsers()
     {
             checkBoxes.clear();
             for(String item:activeUsers)
