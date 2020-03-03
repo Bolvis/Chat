@@ -1,6 +1,5 @@
 package sample.connection;
 
-import java.util.List;
 
 public abstract class ClientPacket {
 
