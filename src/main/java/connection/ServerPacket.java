@@ -1,4 +1,4 @@
-package sample.connection;
+package connection;
 
 public abstract class ServerPacket {
     public enum Type

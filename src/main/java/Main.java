@@ -1,5 +1,3 @@
-package sample;
-
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -11,9 +9,9 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import sample.connection.ClientPacket;
-import sample.connection.Connection;
-import sample.connection.ServerPacket;
+import connection.ClientPacket;
+import connection.Connection;
+import connection.ServerPacket;
 
 import java.io.IOException;
 import java.util.ArrayList;

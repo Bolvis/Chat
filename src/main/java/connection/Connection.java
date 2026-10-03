@@ -1,4 +1,4 @@
-package sample.connection;
+package connection;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
